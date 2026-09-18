@@ -1,0 +1,36 @@
+import pandas as pd
+import glob
+import os
+
+# Go up one level from Functions/ to Python SA/
+current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Read combined_data.csv to get the order
+combined_df = pd.read_csv(os.path.join(current_dir, "Normalize/combined_data.csv"))
+
+# Find all verified files
+normalized_files = sorted(glob.glob(os.path.join(current_dir, "Verified/combined_verified*.xlsx")))
+
+print(f"Found {len(normalized_files)} normalized files:")
+for f in normalized_files:
+    print(f"  - {os.path.basename(f)}")
+
+# Read and combine all normalized files
+dfs = [pd.read_excel(file) for file in normalized_files]
+combined_normalized_df = pd.concat(dfs, ignore_index=True)
+
+# Remove duplicates
+combined_normalized_df = combined_normalized_df.drop_duplicates(subset=['reviewId'], keep='first')
+
+print(f"\nCombined normalized shape: {combined_normalized_df.shape}")
+
+# Reorder to match combined_data.csv order
+order_map = {review_id: idx for idx, review_id in enumerate(combined_df['reviewId'])}
+combined_normalized_df['sort_order'] = combined_normalized_df['reviewId'].map(order_map)
+combined_normalized_df = combined_normalized_df.sort_values('sort_order').drop('sort_order', axis=1).reset_index(drop=True)
+
+# Save
+output_path = os.path.join(current_dir, "finalized_data.xlsx")
+combined_normalized_df.to_excel(output_path, index=False)
+
+print(f"\nFile saved: finalized_data.xlsx")

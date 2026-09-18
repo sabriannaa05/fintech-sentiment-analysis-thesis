@@ -1,0 +1,30 @@
+import pandas as pd
+import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Dataset yang sudah ada labelnya
+labelled_df = pd.read_excel(os.path.join(current_dir, "finalized_data.xlsx"), engine='openpyxl')
+labelled_df = labelled_df[['reviewId', 'sentiment']]  # only need these two columns
+
+# Dataset normalized + preprocessed (target 1)
+normalized_preprocessed_df = pd.read_csv(os.path.join(current_dir, "Normalize/combined_data.csv"))
+
+# Dataset normalized only (target 2)
+# normalized_df = pd.read_excel(os.path.join(current_dir, "combined_preprocessing.xlsx"), engine='openpyxl')
+
+# Merge sentiment labels into both datasets using reviewId as key
+result_1 = normalized_preprocessed_df.merge(labelled_df, on='reviewId', how='left')
+# result_2 = normalized_df.merge(labelled_df, on='reviewId', how='left')
+
+# Check if any rows didn't get a label
+missing_1 = result_1['sentiment'].isna().sum()
+# missing_2 = result_2['sentiment'].isna().sum()
+print(f"Missing labels in normalized+preprocessed: {missing_1}")
+# print(f"Missing labels in normalized only: {missing_2}")
+
+# Save
+result_1.to_excel(os.path.join(current_dir, "final_data.xlsx"), index=False)
+# result_2.to_excel(os.path.join(current_dir, "final_preprocessed.xlsx"), index=False)
+
+print("\nDone! Files saved.")
