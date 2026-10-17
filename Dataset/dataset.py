@@ -66,7 +66,7 @@ df_qr['keyword'] = kword
 
 print("Jumlah data:", len(df_qr))
 
-df_qr.to_csv("Output/hasil_filter_login.csv", index=False)
+df_qr.to_csv("Output/01_hasil_filter_login.csv", index=False)
 
 # # ============================================================
 # #                   TRADITIONAL PREPROCESSING
